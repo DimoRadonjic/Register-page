@@ -1,8 +1,14 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { Component } from 'react';
+import { NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
+import NotificationContainer from 'react-notifications/lib/NotificationContainer';
 import './App.css';
+import { inputClasses } from '@mui/material';
 
-const url = 'http://jsonblob.com/928305936616144896';
+const url = 'https://jsonblob.com/api/jsonBlob';
+const validPasswordRegex = new RegExp(
+  '^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})'
+);
 
 class App extends Component {
   state = {
@@ -12,7 +18,14 @@ class App extends Component {
     email: '',
     password: '',
     confirmPassword: '',
-    signedIn: false,
+    inputClasses: {
+      usernameClass: 'regular',
+      firstNameClass: 'regular',
+      lastNameClass: 'regular',
+      emailClass: 'regular',
+      passwordClass: 'regular',
+      confirmPasswordClass: 'regular',
+    },
   };
 
   handleChange = (e) => {
@@ -46,9 +59,89 @@ class App extends Component {
     }
   };
 
+  showError = (name) => {};
+
   handleSubmit = (e) => {
     e.preventDefault();
     console.log('Submitted: ', this.state);
+
+    if (this.state.username.length < 6 || this.state.username.length > 12) {
+      this.setState({
+        ...this.state,
+        inputClasses: {
+          usernameClass: 'error',
+          firstNameClass: 'regular',
+          lastNameClass: 'regular',
+          emailClass: 'regular',
+          passwordClass: 'regular',
+          confirmPasswordClass: 'regular',
+        },
+      });
+      NotificationManager.error(
+        'Username must be minimum 6 characters long and max is 12',
+        'Username Error',
+        5000
+      );
+    } else if (!validPasswordRegex.test(this.state.password)) {
+      this.setState({
+        ...this.state,
+        inputClasses: {
+          usernameClass: 'regular',
+          firstNameClass: 'regular',
+          lastNameClass: 'regular',
+          emailClass: 'regular',
+          passwordClass: 'error',
+          confirmPasswordClass: 'regular',
+        },
+      });
+      NotificationManager.error(
+        'Password must be 8 characters long or more, must contain at least 1 lowercase alphabetical character, at least 1 uppercase alphabetical character, at least 1 numeric character and at least 1 special character.',
+        'Password Error',
+        5000
+      );
+    } else if (this.state.password !== this.state.confirmPassword) {
+      this.setState({
+        ...this.state,
+        inputClasses: {
+          usernameClass: 'regular',
+          firstNameClass: 'regular',
+          lastNameClass: 'regular',
+          emailClass: 'regular',
+          passwordClass: 'regular',
+          confirmPasswordClass: 'error',
+        },
+      });
+      NotificationManager.error(
+        'Password and confirm password don"t match',
+        'Please confirm your password',
+        5000
+      );
+    } else {
+      this.setState({
+        ...this.state,
+        inputClasses: {
+          usernameClass: 'regular',
+          firstNameClass: 'regular',
+          lastNameClass: 'regular',
+          emailClass: 'regular',
+          passwordClass: 'regular',
+          confirmPasswordClass: 'regular',
+        },
+      });
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(this.state),
+      })
+        .then(() =>
+          NotificationManager.success('Data sent!', 'Successful', 5000)
+        )
+        .catch(() =>
+          NotificationManager.error('Data failed to send', 'Unsuccessful', 5000)
+        );
+    }
   };
 
   render() {
@@ -59,10 +152,11 @@ class App extends Component {
             <h2>Login & Register</h2>
             <p>Login & Register Description</p>
           </div>
-
+          <NotificationContainer />
           <div className='card-body'>
             <form autoComplete='off' onSubmit={this.handleSubmit}>
               <input
+                className={this.state.inputClasses.usernameClass}
                 type='text'
                 autoComplete='off'
                 name='username'
@@ -70,6 +164,8 @@ class App extends Component {
                 onChange={this.handleChange}
               />
               <input
+                className={this.state.inputClasses.firstNameClass}
+                required
                 type='text'
                 name='firstName'
                 placeholder='Enter you First Name'
@@ -77,6 +173,8 @@ class App extends Component {
                 onChange={this.handleChange}
               />
               <input
+                className={this.state.inputClasses.lastNameClass}
+                required
                 type='text'
                 name='lastName'
                 placeholder='Enter you Last Name'
@@ -84,6 +182,8 @@ class App extends Component {
                 onChange={this.handleChange}
               />
               <input
+                className={this.state.inputClasses.emailClass}
+                required
                 type='email'
                 name='email'
                 placeholder='Enter you email'
@@ -91,6 +191,7 @@ class App extends Component {
                 onChange={this.handleChange}
               />
               <input
+                className={this.state.inputClasses.passwordClass}
                 type='password'
                 name='password'
                 placeholder='Password'
@@ -98,8 +199,9 @@ class App extends Component {
                 onChange={this.handleChange}
               />
               <input
+                className={this.state.inputClasses.confirmPasswordClass}
                 type='password'
-                name='password'
+                name='confirmPassword'
                 placeholder='Password'
                 autoComplete='off'
                 onChange={this.handleChange}
