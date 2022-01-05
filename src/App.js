@@ -3,12 +3,13 @@ import { NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import NotificationContainer from 'react-notifications/lib/NotificationContainer';
 import './App.css';
-import { inputClasses } from '@mui/material';
 
 const url = 'https://jsonblob.com/api/jsonBlob';
 const validPasswordRegex = new RegExp(
   '^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})'
 );
+
+const validMailRegex = new RegExp('[a-z0-9]+@[a-z]+.[a-z]{2,3}');
 
 class App extends Component {
   state = {
@@ -63,7 +64,6 @@ class App extends Component {
 
   handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Submitted: ', this.state);
 
     if (this.state.username.length < 6 || this.state.username.length > 12) {
       this.setState({
@@ -80,6 +80,23 @@ class App extends Component {
       NotificationManager.error(
         'Username must be minimum 6 characters long and max is 12',
         'Username Error',
+        5000
+      );
+    } else if (!validMailRegex.test(this.state.email)) {
+      this.setState({
+        ...this.state,
+        inputClasses: {
+          usernameClass: 'regular',
+          firstNameClass: 'regular',
+          lastNameClass: 'regular',
+          emailClass: 'error',
+          passwordClass: 'regular',
+          confirmPasswordClass: 'regular',
+        },
+      });
+      NotificationManager.error(
+        'Email you entered is not valid',
+        'Email Error',
         5000
       );
     } else if (!validPasswordRegex.test(this.state.password)) {
